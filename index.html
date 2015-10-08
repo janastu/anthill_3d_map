@@ -80,6 +80,8 @@
 		<script src="js/fonts/gentilis_regular.typeface.js"></script>
 		<script src="js/fonts/helvetiker_bold.typeface.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="js/underscore-min.js"></script>
+		<script src="js/backbone-min.js"></script>
 		<script src="js/avgrund_modal/jquery.avgrund.js"></script>
 <div class="buttons">
 			
@@ -160,23 +162,70 @@
 			controls.getObject().rotation.set(0,-8.404, 0);
 			
 			});
-		var paddysweet = [];
-		var filteredsweet = [];
-			$.ajax({
-		url: "http://thestore.swtr.in/api/sweets/q?what=img-anno",
-		success: function(resp){
-    
-		 paddysweet = resp;
-		 console.log("success");
-		 
-		 },
-		 complete: function() {
-			init();
-			animate();
-		 }
-
+// Swts from swt store
+var swt = Backbone.Model.extend({
+    defaults: { 'who' :'',
+        'what' : '',
+        'where' : '',
+        'how' : {}
+    }
 });
-			
+
+var swts = Backbone.Collection.extend({
+    model: swt,
+    filterByTag: function(tag) {
+        return this.filter(function(model){
+            if(_.contains(model.get('how').tags, tag)){
+                return model;
+            }
+        });    
+    }      
+});
+        swts = new swts();
+        swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
+            success: function(swts, response){
+                init();
+            }
+        });
+
+// Supposed backbone views to render canvas - status: Incomplete
+/*var boxView = Backbone.View.extend({
+    tagName: 'canvas',
+    initialize: function(options) {    
+        this.model = options.model;
+		this.temp = new Image();
+		this.temp.src = 'images/temp.png';
+    },
+    render: function(){
+		canvas.width = 256;
+		canvas.height = 128;
+		context = canvas.getContext('2d');
+        this.temp.onload = function() {
+            context.drawImage(this.temp, 0, 0, 256, 128);
+            context.font = 'Bold 15px Helvetica';
+            context.fillStyle ="#ff0000";
+            context.fillText(this.model.get('who'), 60, 30);
+            context.fillText(this.model.get('how').title, 20, 64);
+            context.fillText(this.model.get('how').tags, 20, 110);
+            context.font = 'Bold 10px Helvetica';
+            context.fillText(this.model.get('how').comment, 20, 90);
+        }
+        console.log(this.temp);
+
+    }
+});
+var annoView = Backbone.View.extend({
+    initialize: function() {
+        this.collection = new swts();
+        this.collection.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno'});
+    },
+    render: function(){
+        this.collection.each(function(model) {
+            var box = new boxView({model: model});
+        });
+    }
+});
+*/			
 	
 				
 			var camera, scene, renderer;
@@ -456,7 +505,7 @@
 		
 		//create all sweets for user pradyumna. placed randomly on map
 		//var j = 0;
-		var k =0;
+		/*var k =0;
 		for(var i=0; i<paddysweet.length; i++)
 		{
 		  if (!("tags" in paddysweet[i].how)) {
@@ -475,42 +524,45 @@
 			}
 			
 		}
-		}
-		
-		
-		//create all sweets for user pradyumna. placed randomly on map
-		//var j = 0;
+		}*/
+
+        var filteredsweet = swts.filterByTag("AntHillHacks");
+
+		//create all sweets for user pradyumna. placed randomly on map 
 		var temps = [];
 		for(var i=0; i<filteredsweet.length; i++)
 		{
-		who[i] = filteredsweet[i].who;
-		
-		if (!("title" in filteredsweet[i].how)) {
+          var swt = filteredsweet[i].toJSON();
+          console.log(swt);
+		who[i] = swt.who;
+		if (!("title" in swt.how)) {
 			title[i] = 'NO TITLE';
 		}
 		else {
-			title[i] = filteredsweet[i].how.title;
+			title[i] = swt.how.title;
 		}
 		
-		if (!("comment" in filteredsweet[i].how)) {
+		if (!("comment" in swt.how)) {
 			comment[i] = 'NO comment';
 		}
 		else {
-			comment[i] = filteredsweet[i].how.comment;
+			comment[i] = swt.how.comment;
 		}
 		
-		if (!("tags" in filteredsweet[i].how)) {
+		if (!("tags" in swt.how)) {
 			tags[i] = 'NO tags';
 		}
 		
 		else {
 			
 			tags[i] = '';
-			for(var l=0; l<filteredsweet[i].how.tags.length;l++)
+			for(var l=0; l<swt.how.tags.length;l++)
 			{
 				
-			tags[i]+= filteredsweet[i].how.tags[l]+' '; 
+			tags[i]+= swt.how.tags[l]+' '; 
 			}
+            console.log('who='+who[i], 'title='+title[i],
+            'comment='+comment[i], 'tags='+tags[i])
 			//tags[i] = temps[i];
 		}
 		
@@ -537,7 +589,7 @@
 			}
 		})(i);
 		
-		
+	    console.log(temp);	
 		temp.src = 'images/template2.jpg';
 		texture12[i] = new THREE.Texture(canvas[i]);
 		texture12[i].needsUpdate = true;
@@ -548,6 +600,7 @@
                scene.add(sweet[i]);
 	       sweet[i].position.set(Math.random() * (6500 - 6100) + 6100, - 700, Math.random() * (1000 - 700) + 700);
 	       sweet[i].name = 'sweet'+i;
+           console.log(sweet[i]);
 
 	       
 		}
