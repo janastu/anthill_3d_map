@@ -185,6 +185,7 @@ var swts = Backbone.Collection.extend({
         swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
             success: function(swts, response){
                 init();
+		animate();
             }
         });
 
@@ -245,6 +246,7 @@ var annoView = Backbone.View.extend({
 			var intersects2;
 			var intersections2;
 			var mesh, mesh2;
+			var filteredsweet;
 			
 			//var beanbag, swivelchair, brokenchair;
 
@@ -526,7 +528,7 @@ var annoView = Backbone.View.extend({
 		}
 		}*/
 
-        var filteredsweet = swts.filterByTag("AntHillHacks");
+        filteredsweet = swts.filterByTag("AntHillHacks");
 
 		//create all sweets for user pradyumna. placed randomly on map 
 		var temps = [];
