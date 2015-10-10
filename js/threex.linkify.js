@@ -1,7 +1,7 @@
 var THREEx	= THREEx	|| {}
 
 
-THREEx.Linkify	= function(domEvents, mesh, url, withBoundingBox){
+THREEx.Linkify	= function(domEvents, mesh, withBoundingBox){
 	withBoundingBox	= withBoundingBox !== undefined ? withBoundingBox : true
 	// compute geometry size
 	var geometry	= mesh.geometry
@@ -37,9 +37,9 @@ THREEx.Linkify	= function(domEvents, mesh, url, withBoundingBox){
 	// bind the click
 	var eventTarget	= withBoundingBox ? boundingBox : mesh 
 	this.eventTarget= eventTarget
-	domEvents.bind(eventTarget, 'dblclick', function(event){
-		window.open(url, '_blank');
-	})
+	//domEvents.bind(eventTarget, 'dblclick', function(event){
+	//	window.open(url, '_blank');
+	//})
 
 	// bind 'mouseover'
 	domEvents.bind(eventTarget, 'mouseover', function(event){
