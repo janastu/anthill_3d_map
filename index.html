@@ -1,13 +1,12 @@
-<!-- learning to make shapes from mouse click for splitting probir's painting
-
+<!-- version w/o pointerlock controls
+implemented threex and linkify. linkify changed to use dblclick
+cleaned up code
 -->
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>DEVARAYANADURGA</title>
-		<link rel="stylesheet" href="css/bootstrap/css/bootstrap.css">
-		<link rel="stylesheet" href="css/lightbox.css">
+		<title>AntHillHacks</title>
 		<link rel="stylesheet" href="js/avgrund_modal/avgrund.css">
 		<style>
 			html, body {
@@ -22,159 +21,32 @@
 				font-family: arial;
 			}
 
-			#blocker {
-
-				position: absolute;
-
-				width: 100%;
-				height: 100%;
-
-				background-color: rgba(0,0,0,0.5);
-
-			}
-
-			#instructions {
-
-				width: 100%;
-				height: 100%;
-
-				display: -webkit-box;
-				display: -moz-box;
-				display: box;
-
-				-webkit-box-orient: horizontal;
-				-moz-box-orient: horizontal;
-				box-orient: horizontal;
-
-				-webkit-box-pack: center;
-				-moz-box-pack: center;
-				box-pack: center;
-
-				-webkit-box-align: center;
-				-moz-box-align: center;
-				box-align: center;
-
-				color: #ffffff;
-				text-align: center;
-
-				cursor: pointer;
-
-			}
-			#top_view {
-				z-index: 50;
-				   position:absolute;
-					top: 46%;
-					left: 48%;
-				
-				
-			}
-            #swt-overlay {
-                z-index: 100;
-                position:absolute;
-                background-color: transparent;
-                width:50vw;
-                height:100vh;
-                overflow-y: auto;
-            }
+			
 
 		</style>
 	</head>
 	<body>
 		
 		
-		<script src="js/three_r70.js"></script>
-		<script src="js/PointerLockControls.js"></script>
+		<script src="js/three.min.js"></script>
 		<script src="js/OrbitControls.js"></script>
 		<script src="js/Projector.js"></script>
 		<script src="js/fonts/helvetiker_regular.typeface.js"></script>
 		<script src="js/fonts/gentilis_regular.typeface.js"></script>
-		<script src="js/fonts/helvetiker_bold.typeface.js"></script>
-		<script src="js/jquery-1.11.3.min.js"></script>
-		<script src="css/bootstrap/js/bootstrap.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 		<script src="js/underscore-min.js"></script>
 		<script src="js/backbone-min.js"></script>
-        <script src="js/lightbox.js"></script>
-		<script src="js/avgrund_modal/jquery.avgrund.js"></script>
-<div class="buttons">
-			
+		<script src ="js/threex.domevents.js"></script>
+		<script src ="js/threex.linkify.js"></script>
+
+
+		<div class="buttons">
 			<p>Fast Navigation: <a href="#" id="tb_link">Traveller's Bungalow</a> <a href="#" id="ant_link">Anteras</a> <a href="#" id="kalyani_link">Idol at Kalyani</a></p>
-			</div>
-<div id ="show2" > </div>
-<div id ="show3" > </div>
-<div class="container-fluid" id ="swt-overlay">
-        <button type="button" class="btn btn-default close-swt">Right</button>
-        <div id="swt-container">
-        </div>
-</div>
-		<div id="blocker">
-
-			<div id="instructions">
-				<span style="font-size:40px">Click to enter</span>
-				<br />
-				(W,S = FORWARD/BACKWARD, A,D = LEFT/RIGHT, Q,E = UP/DOWN  MOUSE = Look around, ESC = quit)
-			</div>
-
 		</div>
+		<div id ="show2" > </div>
+		<div id ="show3" > </div>
 		
-		<div id="top_view">
-			<img src="images/x.png"></img>
-			
-		</div>
-		
-        <!-- Templates for web components -->
-        <script type="text/template" id="swts-template">
-<div class="swtr-web ">
-<div class="media">
-<div class="media-body">
-<div class="media-left">
-<a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
-data-title="<%=how.comment%> <%=how.tags%>">
-<img class="media-object img-responsive" src="<%=where%>"  />
-</a>
-</div>
-<h4 class="media-heading"> <%=how.title%></h4>
-<h5> <%=how.comment%></h5>
-<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
-</div>
-</div>
-</div>
-        </script>
-
 		<script>
-			
-
-   // var user = prompt("Enter user name to query sweet store", "Guest");
-    
-   
-
-			
-			$('#show').avgrund({
-			height: 450,
-			holderClass: 'custom',
-			showClose: true,
-			showCloseText: 'close',
-			onBlurContainer: '.container',
-			template: '<iframe width="640" height="350" src="http://thestore.swtr.in/"></iframe>'
-			});
-			
-			$('#show2').avgrund({
-			height: 450,
-			holderClass: 'custom',
-			showClose: true,
-			showCloseText: 'close',
-			onBlurContainer: '.container',
-			template: '<iframe width="640" height="350" src="http://da.pantoto.org/audio-girish-radio/AnthillHacks_audio/2nd_day/arjun/150719-171335.mp3"></iframe>'
-			});
-		
-		
-			$('#show3').avgrund({
-			height: 450,
-			holderClass: 'custom',
-			showClose: true,
-			showCloseText: 'close',
-			onBlurContainer: '.container',
-			template: '<iframe width="640" height="350" src="http://da.pantoto.org/audio-girish-radio/AnthillHacks_audio/ankita_school_kids/110101-033645.mp3"></iframe>'
-			});
 		
 		$('#tb_link').click(function(){
 			
@@ -196,68 +68,35 @@ data-title="<%=how.comment%> <%=how.tags%>">
 			controls.getObject().rotation.set(0,-8.404, 0);
 			
 			});
-// swts from swt store
-var swt = Backbone.Model.extend({
-    defaults: { 'who' :'',
-        'what' : '',
-        'where' : '',
-        'how' : {}
-    }
-});
+		
+		// Swts from swt store
+		var swt = Backbone.Model.extend({
+		defaults: { 'who' :'',
+		'what' : '',
+		'where' : '',
+		'how' : {}
+		}	
+		});
 
-var swts = Backbone.Collection.extend({
-    model: swt,
-    filterByTag: function(tag) {
-        var swts = this.filter(function(model){
-            if(_.contains(model.get('how').tags, tag)){
+		var swts = Backbone.Collection.extend({
+		model: swt,
+		filterByTag: function(tag) {
+		return this.filter(function(model){
+		if(_.contains(model.get('how').tags, tag)){
                 return model;
-            }
-        });  
-        return swts = _.uniq(swts, function(swt){
-            return swt.get('where');
-        });
-    }      
-});
-swts = new swts();
-swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
-    success: function(swts, response){
-        init();
-        animate();
-    }
-});
-//swts view to handle click handlers
-var swtsView = Backbone.View.extend({
-    el: "#swt-overlay",
-    events:{
-        ".close-swt click": "closeSwtOverlay"
-    },
-    initialize: function(options){
-        this.$swtContainer = $("#swt-container");
-        this.render();
-        this.listenTo(this.collection, "set", this.render);
-        console.log(swts, "uniq swts");
-    },
-    template: _.template($('#swts-template').html()),
-    render: function() {
-        this.$swtContainer.html('');
-        //this.targetId = this.collection.get(options.id);
-        _.each(this.collection, function(model) {
-            this.$swtContainer.append(this.template(model.toJSON()));
-        }, this);
+				}
+			});    
+		}      
+		});
+		swts = new swts();
+		swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
+		success: function(swts, response){
+                init();
+                animate();
+		}
+		});
 
-    },
-    closeSwtOverlay: function(event) {
-        console.log(event);
-        if(!(this.$el.is(":hidden"))){
-            this.$el.hide();
-        }
-        else {
-            this.$el.show();
-        }
-    }
-});
-
-    // Supposed backbone views to render canvas - status: Incomplete
+// Supposed backbone views to render canvas - status: Incomplete
 /*var boxView = Backbone.View.extend({
     tagName: 'canvas',
     initialize: function(options) {    
@@ -295,7 +134,8 @@ var annoView = Backbone.View.extend({
     }
 });
 */			
-				
+	
+			//variables	
 			var camera, scene, renderer;
 			var controls, controls2;
 			var objects = [];
@@ -313,294 +153,162 @@ var annoView = Backbone.View.extend({
 			var intersects2;
 			var intersections2;
 			var mesh, mesh2;
-			var filteredsweet;
-			//var beanbag, swivelchair, brokenchair;
-
-			var blocker = document.getElementById( 'blocker' );
-			var instructions = document.getElementById( 'instructions' );
-
-			// http://www.html5rocks.com/en/tutorials/pointerlock/intro/
-
-			var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-
-			if ( havePointerLock ) {
-
-				var element = document.body;
-
-				var pointerlockchange = function ( event ) {
-
-					if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {0
-
-						controlsEnabled = true;
-						controls.enabled = true;
-
-						blocker.style.display = 'none';
-						document.addEventListener( 'mousedown', onDocumentMouseDown);
-						document.addEventListener( 'keydown', onKeyDown);
-
-					} else {
-
-						controls.enabled = false;
-
-						blocker.style.display = '-webkit-box';
-						blocker.style.display = '-moz-box';
-						blocker.style.display = 'box';
-
-						instructions.style.display = '';
-
-					}
-
-				}
-
-				var pointerlockerror = function ( event ) {
-
-					instructions.style.display = '';
-
-				}
-
-				// Hook pointer lock state change events
-				document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-				document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-				document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
-
-				document.addEventListener( 'pointerlockerror', pointerlockerror, false );
-				document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
-				document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
- 
-				instructions.addEventListener( 'click', function ( event ) {
-
-					instructions.style.display = 'none';
-                                        
-					// Ask the browser to lock the pointer
-					element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-
-					if ( /Firefox/i.test( navigator.userAgent ) ) {
-
-						var fullscreenchange = function ( event ) {
-
-							if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
-
-								document.removeEventListener( 'fullscreenchange', fullscreenchange );
-								document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
-
-								element.requestPointerLock();
-							}
-
-						}
-
-						document.addEventListener( 'fullscreenchange', fullscreenchange, false );
-						document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
-
-						element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
-
-						element.requestFullscreen();
-
-					} else {
-
-						element.requestPointerLock();
-
-					}
-
-				}, false );
-
-			} else {
-
-				instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
-
-			}
-
+			var filteredsweet = [];
+			var group1, group2;
+			var domEvents;
 			
-			
-
-			var controlsEnabled = false;
-
-			var moveForward = false;
-			var moveBackward = false;
-			var moveLeft = false;
-			var moveRight = false;
-			var moveUp = false;
-			var moveDown = false;
-			
-
-			var prevTime = performance.now();
-			var velocity = new THREE.Vector3();
-			
-			var holder = true, geometry2, murra, PR, YR;
 			function init() {
 				
-			
-
-			var groupN = new THREE.Object3D();
+				//render code
+				renderer = new THREE.WebGLRenderer({antialias: true});
+				renderer.setClearColor( 0x333377, 0.9 );
+				renderer.autoClear = false;
+				//renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
 				
-
 				scene = new THREE.Scene();
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500000 );
 				scene.add(camera);
-				camera2 = new THREE.PerspectiveCamera( 55, window.innerWidth/window.innerHeight, 1, 10000 );
-				//scene.add(camera2);
-				camera2.rotation.set(-1.57, 0, 4.4);
-				//scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
+				camera.position.set(6408, -721, 576 )
 				
+				//controls
+				controls = new THREE.OrbitControls(camera, renderer.domElement);
+				controls.noPan = true;
+				controls.noZoom = false;
+				controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
 				
-						//lights
-			var light1 = new THREE.PointLight( 0xeeeeff, 100, 500 );
-			light1.position.set( 200,230,-50 );
-			scene.add( light1 );
+				//lights
+				/*
+				var light1 = new THREE.PointLight( 0xeeeeff, 100, 500 );
+				light1.position.set( 200,230,-50 );
+				scene.add( light1 );
 			
-			var light2 = new THREE.PointLight( 0xeeeeff, 100, 500 );
-			light2.position.set( 20,20,-250 );
-			scene.add( light2 );
+				var light2 = new THREE.PointLight( 0xeeeeff, 100, 500 );
+				light2.position.set( 20,20,-250 );
+				scene.add( light2 );
 			
 				var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
 				light.position.set( 0.5, 1, 0.75 );
 				scene.add( light );
-
-				controls = new THREE.PointerLockControls( camera );
+				*/
 				
-				scene.add( controls.getObject() );
 				
-
-				 
-
+				 //dom events
+				 domEvents = new THREEx.DomEvents(camera, renderer.domElement);
 				document.addEventListener( 'keydown', onKeyDown, false );
-				document.addEventListener( 'keyup', onKeyUp, false );
-				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-
+				//document.addEventListener( 'keyup', onKeyUp, false );
+				//document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				//document.addEventListener( 'mouseover', onDocumentMouseOver, false );
+				//document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+				window.addEventListener( 'resize', onWindowResize, false );
 				raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 1000 );
 				mouse = new THREE.Vector2();
 				
 
-				//objects
+		//objects
                 
                
-               //Plane
-             /*  tex1 = new THREE.ImageUtils.loadTexture('images/ddhills1.jpg');
-	       tex1.generateMipmaps = false;
-	       tex1.minFilter = THREE.LinearFilter;
-	       tex1.magFilter = THREE.LinearFilter;
-               geo1= new THREE.PlaneBufferGeometry(7495, 6622);
-               mat1 = new THREE.MeshBasicMaterial ({map:tex1});
-               plane = new THREE.Mesh(geo1, mat1);
-               //scene.add(plane);
-	       plane.rotation.x=-1.57;
-	       plane.position.set(7495/2,100,6622/2);
-              */
-		
-		//json
+               //json
 		var loader = new THREE.JSONLoader();
-		 tex2 = new THREE.ImageUtils.loadTexture('objects/tb_drone2/meshAvImgCol_color.png');
+		tex2 = new THREE.ImageUtils.loadTexture('objects/tb_drone2/meshAvImgCol_color.png');
 		loader.load( "objects/tb_drone2/itbdron3.1.js", function( geometry, material ) {
-		  geometry.center();
-		  
-		  var scale = 5;
-	      drone_mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map:tex2, side:THREE.DoubleSide})  );
+		geometry.center();
+		var scale = 5;
+	        drone_mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map:tex2, side:THREE.DoubleSide})  );
 		drone_mesh.rotation.set(3.1, -3.90, 0);
-		//3.7,8.2,3
-		//world.RoomMesh.rotation.set(-1.90,0.268,-0.473);
 		drone_mesh.scale.set(scale,scale,scale);
 		scene.add(drone_mesh);
 		drone_mesh.position.set( 5909, -355,  3293);
-		
-		//RoomMesh.name = 'RoomMesh';
-		//objects.push(RoomMesh);
-		
 		});
                 
-
-		 var loader3 = new THREE.JSONLoader();
-		 tex4 = new THREE.ImageUtils.loadTexture('objects/idol/meshAvImgCol_color.png');
+		var loader3 = new THREE.JSONLoader();
+		tex4 = new THREE.ImageUtils.loadTexture('objects/idol/meshAvImgCol_color.png');
 		loader3.load( "objects/idol/idolsimple.js", function( geometry, material ) {
-		  geometry.center();
-		  
-		  var scale = 10;
+		geometry.center();
+		var scale = 10;
 		idol_mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map:tex4, side:THREE.DoubleSide})  );
-		
 		idol_mesh.rotation.set(-3.0999, 1.4999, 0);
-		
 		idol_mesh.scale.set(scale,scale,scale);
 		scene.add(idol_mesh);
 		idol_mesh.position.set(3375.4281241, -1160, -331.91);
-	
-		
 		});
 		
 		var loader4 = new THREE.JSONLoader();
-	     var tex5 = new THREE.ImageUtils.loadTexture('objects/ddhills_terrain_3/0_test1_0_2.png');
-		 tex5.generateMipmaps = false;
-	       tex5.minFilter = THREE.LinearFilter;
-	       tex5.magFilter = THREE.LinearFilter;
+		var tex5 = new THREE.ImageUtils.loadTexture('objects/ddhills_terrain_3/0_test1_0_2.png');
+		tex5.generateMipmaps = false;
+	        tex5.minFilter = THREE.LinearFilter;
+	        tex5.magFilter = THREE.LinearFilter;
 		loader4.load( "objects/ddhills_terrain_3/0_test1_4.js", function( geometry, material) {
-		  geometry.center();
-		  
-		  var scale = 100;
+		geometry.center();
+		var scale = 100;
 		terrain_map = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({ map: tex5, side:THREE.DoubleSide})  );
-		
-		//terrain_map.rotation.set(-3.0999, 0.1999, 0);
-		
 		terrain_map.scale.set(scale,scale,scale);
 		scene.add(terrain_map);
 		terrain_map.position.set(0,-1360,0);
-	
-		
+		//threex event handler
+		domEvents.addEventListener(terrain_map, 'click', function(event){
+		console.log("eh?");					
+		}, false);
 		});
+		
 		
 		//skybox
 		var skybox = new THREE.Mesh(new THREE.SphereGeometry(100000,75,75), new THREE.MeshBasicMaterial({map: new THREE.ImageUtils.loadTexture('images/sky1.jpg'), side:THREE.BackSide}));
 		scene.add(skybox);
 		skybox.position.set(0,-4360 , 0);
 		
-                 controls.getObject().position.x =6408.977956862436;
-		 controls.getObject().position.y=-721.4083795343411;
-		 controls.getObject().position.z= 576.652824789846;
-		 controls.getObject().rotation.set(0,-3.752, 0);
-		 
-		
-		//topcam
-		murra = new THREE.Vector3;
-			murra = controls.getObject().position;
-			var group = new THREE.Group();
+                //test cube
 		cube = new THREE.Mesh(new THREE.BoxGeometry(200,500,200), new THREE.MeshBasicMaterial({side:THREE.DoubleSide, color:0x00ff00}));
-		//scene.add(cube);
+		scene.add(cube);
 		cube.name = 'cube1';
-		cube.position.set(569,120,5143);
-		cube2 = new THREE.Mesh(new THREE.BoxGeometry(10,10,10), new THREE.MeshBasicMaterial({ color:0x00ff00}));
-		scene.add(cube2);
-		cube2.name = 'cube2';
-		cube2.position.set(30,120,50);
-		objects = ['cube1', 'cube2', 'tb_info', 'tb_audio', 'antPoster'];
-		//cube.position.set(murra.x,murra.y+50,murra.z);
+		cube.position.set(6008, -721, 576 );
 		
 		
-		//create all sweets for user pradyumna. placed randomly on map
-		//var j = 0;
-		/*var k =0;
-		for(var i=0; i<paddysweet.length; i++)
-		{
-		  if (!("tags" in paddysweet[i].how)) {
+		makeSweets("Maharashtra");
+		makeSweets("Goa");
+	 
+		//audio icon
+		/*
+	       audio_tex = new THREE.ImageUtils.loadTexture('images/audio.png');
+	       audio_tex.generateMipmaps = false;
+	       audio_tex.minFilter = THREE.LinearFilter;
+	       audio_tex.magFilter = THREE.LinearFilter;
+               audio_geo = new THREE.PlaneBufferGeometry(35, 35);
+               audio_mat = new THREE.MeshBasicMaterial ({map:audio_tex, transparent:true, opacity:0.9});
+               audio_icon = new THREE.Mesh(audio_geo, audio_mat);
+               scene.add(audio_icon);
+	       audio_icon.position.set(6551.9908097, -724.341328, 493.19269);
+	       audio_icon.name = 'tb_audio';
+		*/
+          
+                }
 			
-		}
-		else {
-			
-			for(var j=0; j<paddysweet[i].how.tags.length;j++)
-			{
-				if(paddysweet[i].how.tags[j] == 'AntHillHacks')
-				{
-					filteredsweet[k] = paddysweet[i];
-					k++;
-				}
-			
-			}
-			
-		}
-		}*/
-        filteredsweet = swts.filterByTag("AntHillHacks");
-        swtsWebView = new swtsView({collection: filteredsweet});
-
-		//create all sweets for user pradyumna. placed randomly on map 
+	function makeSweets(x) {
+		//generates a canvas texture with sweet data, textures onto mesh;
+		//using window[] to declare global variables. find more efficient way.
+		filteredsweet = swts.filterByTag(x);
+		
 		var temps = [];
+		var  who = [], what = [], where = [], id = [], created = [], title = [], tags = [], comment = [];
+		window[x+'ID'] = [];
+		window[x+'Canvas'] = [];
+		window[x+'Context'] = [];
+		window['sweet'+x] = [];
+		window[x+'Texture'] = [];
+		window[x+'Mat'] = [];
+		window[x+'Geo'] = [];
+		window[x+'Length'] = filteredsweet.length;
+		window[x+'Url'] = [];
+		window[x+'Linkify'] = [];
+		
+		
 		for(var i=0; i<filteredsweet.length; i++)
 		{
-          var swt = filteredsweet[i].toJSON();
+		var swt = filteredsweet[i].toJSON();
+		//console.log(swt);
+		window[x+'ID'][i] = swt.id;
+		//swtsWebView = new swtsView({collection: filteredsweet, id:swt.id});
 		who[i] = swt.who;
 		if (!("title" in swt.how)) {
 			title[i] = 'NO TITLE';
@@ -628,95 +336,75 @@ var annoView = Backbone.View.extend({
 				
 			tags[i]+= swt.how.tags[l]+' '; 
 			}
+		//console.log('who='+who[i], 'title='+title[i],
+		//'comment='+comment[i], 'tags='+tags[i])
+	
 		}
 		
 			
 		// create canvas
-		canvas[i] = document.createElement('canvas');
-		canvas[i].width = 256;
-		canvas[i].height = 128;
-		context[i] = canvas[i].getContext('2d');
+		window[x+'Canvas'][i] = document.createElement('canvas');
+		window[x+'Canvas'][i].width = 256;
+		window[x+'Canvas'][i].height = 128;
+		window[x+'Context'][i] = window[x+'Canvas'][i].getContext('2d');
 		var temp = new Image();
-		//var temp = img2[i];
 		temp.onload = (function(i){
 			return function() {
 						
-						context[i].drawImage(temp, 0, 0, 256, 128);
-						context[i].font = 'Bold 15px Helvetica';
-						context[i].fillStyle ="#ff0000";
-						context[i].fillText(who[i], 60, 30);
-						context[i].fillText(title[i], 20, 64);
-						context[i].fillText(tags[i], 20, 110);
-						context[i].font = 'Bold 10px Helvetica';
-						context[i].fillText(comment[i], 20, 90);
+						window[x+'Context'][i].drawImage(temp, 0, 0, 256, 128);
+						window[x+'Context'][i].font = 'Regular 15px Helvetica';
+						window[x+'Context'][i].fillStyle ="#000000";
+						window[x+'Context'][i].fillText(who[i], 60, 30);
+						window[x+'Context'][i].fillText(title[i], 20, 64);
+						window[x+'Context'][i].fillText(tags[i], 20, 110);
+						window[x+'Context'][i].font = 'Regular 10px Helvetica';
+						window[x+'Context'][i].fillText(comment[i], 20, 90);
 						
 			}
 		})(i);
-		
-	    console.log(temp);	
 		temp.src = 'images/template2.jpg';
-		texture12[i] = new THREE.Texture(canvas[i]);
-		texture12[i].needsUpdate = true;
+		window[x+'Texture'][i] = new THREE.Texture(window[x+'Canvas'][i]);
+		window[x+'Texture'][i].needsUpdate = true;
+		window[x+'Geo'][i] = new THREE.BoxGeometry(70, 35, 1);
+                window[x+'Mat'][i] = new THREE.MeshBasicMaterial ({map:window[x+'Texture'][i]});
+		window['sweet'+x][i] =  new THREE.Mesh(window[x+'Geo'][i], window[x+'Mat'][i]);
+		scene.add(window['sweet'+x][i]);
+	        window[x+'Url'][i] = 'http://thestore.swtr.in/sweets/'+window[x+'ID'][i]
+		window[x+'Linkify'][i] = THREEx.Linkify(domEvents, window['sweet'+x][i], window[x+'Url'][i], true)
 		
-               sweet_geo[i] = new THREE.PlaneBufferGeometry(70, 35);
-               sweet_mat[i] = new THREE.MeshBasicMaterial ({map:texture12[i]});
-               sweet[i] = new THREE.Mesh(sweet_geo[i], sweet_mat[i]);
-               scene.add(sweet[i]);
-	       sweet[i].position.set(Math.random() * (6500 - 6100) + 6100, - 700, Math.random() * (1000 - 700) + 700);
-	       sweet[i].name = 'sweet'+i;
-
-	       
-		}
+		switch (x){
 		
+		case "Goa":
+				window['sweet'+x][i].position.set(Math.random() * (6500 - 6100) + 6100, - 700, Math.random() * (1000 - 700) + 700);
+				window['sweet'+x][i].name = 'Goa'+i;
+				break;
 		
-	       
-	       audio_tex = new THREE.ImageUtils.loadTexture('images/audio.png');
-	       audio_tex.generateMipmaps = false;
-	       audio_tex.minFilter = THREE.LinearFilter;
-	       audio_tex.magFilter = THREE.LinearFilter;
-               audio_geo = new THREE.PlaneBufferGeometry(35, 35);
-               audio_mat = new THREE.MeshBasicMaterial ({map:audio_tex, transparent:true, opacity:0.9});
-               audio_icon = new THREE.Mesh(audio_geo, audio_mat);
-               scene.add(audio_icon);
-	       audio_icon.position.set(6551.9908097, -724.341328, 493.19269);
-	       audio_icon.name = 'tb_audio';
-		
-          
-                		
-				//
-				renderer = new THREE.WebGLRenderer({antialias: true});
-				renderer.setClearColor( 0x333377, 0.9 );
-				renderer.autoClear = false;
-				//renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-				//console.log(paddysweet);
-				//
-
-				window.addEventListener( 'resize', onWindowResize, false );
-				
-
+		case "Maharashtra":
+				window['sweet'+x][i].position.set(Math.random() * (370-236) + 236,  1000, Math.random() * (6968 - 6101) + 6101);
+				window['sweet'+x][i].name = 'Maharashtra'+i;
+				break;
 			}
+		}
+	       };
 
-			function onWindowResize() {
+	function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
-
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
-			}
-			function makeRay(event) {
+		};
+			
+	function makeRay(event) {
+				
 				raycaster2 = new THREE.Raycaster(controls.getObject().position, controls.getDirection(v3), 0, 1000);
 				return raycaster2;
-				
-				
-			};
+		};
 			
-			function onKeyDown( event ) {
-					var value=0.01, value2 =1;
-					switch ( event.keyCode ) {
-
+	function onKeyDown( event ) {
+				var value=0.01, value2 =1;
+				switch ( event.keyCode ) {
+				//add navigation code here
 						case 38: // up
 						case 87: // w
 							moveForward = true;
@@ -743,88 +431,14 @@ var annoView = Backbone.View.extend({
 							moveDown = true;
 							break;
 
-						/*case 32: // space
-							if ( canJump === true ) velocity.y += 650;
-							canJump = false;
 						
-							break;
-						
-						case 67: //c
-							
-							if (holder == true) {
-							camera.position.y -=10;
-							holder = false;
-							}
-                                                        
-							break; */
-						
-						case 49:
-							console.log("1");
-							setOrbitControls();
-							break;
-						
-						case 50:
-							console.log("2");
-							setFirstPersonControls();
-							break;
-						
-						case 27:
-							ji++;
-							console.log(ji);
-							event.preventDefault(event);
-							document.removeEventListener( 'mousedown', onDocumentMouseDown);
-	controls.enabled = false;
-	controls.Enabled = false;
-	document.removeEventListener( 'keydown', onKeyDown);
-	document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock ||document.webkitExitPointerLock;
-	document.exitPointerLock();
-							break;
-					}
+						}
 
 				};
 
-				function onKeyUp( event ) {
-
-					switch( event.keyCode ) {
-
-						case 38: // up
-						case 87: // w
-							moveForward = false;
-							break;
-
-						case 37: // left
-						case 65: // a
-							moveLeft = false;
-							break;
-
-						case 40: // down
-						case 83: // s
-							moveBackward = false;
-							break;
-
-						case 39: // right
-						case 68: // d
-							moveRight = false;
-							break;
-						//case 67: //c
-                                                  //      holder = true;
-							//camera.position.y += 10;
-							
-							//break;
-						case 81: //q
-							moveUp = false;
-							break;
-						
-						case 69: //e
-							moveDown = false;
-							break;
-
-					}
-
-				};
-			
+				
 			function onDocumentMouseDown( event ) {
-
+				//might not be required
 				event.preventDefault();
 
 				mouse.x = ( event.clientX / renderer.domElement.width ) * 2 - 1;
@@ -844,188 +458,47 @@ var annoView = Backbone.View.extend({
 							mClick++;
 							console.log(mClick);
 							
-								if (intersected[i].object.name === 'cube1')
+								for(j=0; j<GoaLength; j++)
 								{
-									//window.open("http://www.google.com");
-									//controls.enabled = false;
-									//blocker.style.display = '-webkit-box';
-									//blocker.style.display = '-moz-box';
-									//instructions.style.display = '';
-				
-			}
-			else if(intersected[i].object.name === 'cube2') {
-					//window.open("http://www.servelots.com");
-					//controls.enabled = false;
-	
-	
-	
-	//$("#show").click();
-	document.removeEventListener( 'mousedown', onDocumentMouseDown);
-	controls.enabled = false;
-	controls.Enabled = false;
-	document.removeEventListener( 'keydown', onKeyDown);
-	document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock ||document.webkitExitPointerLock;
-	document.exitPointerLock();
-	instructions.style.display = 'blocked';
-	$("#show2").click();
-	colorize ++; 
-	console.log("colorize =" + colorize);
-				
-			
-			}
-			else if(intersected[i].object.name === 'tb_info') {
-					//window.open("http://www.servelots.com");
-					//controls.enabled = false;
-					console.log('hi');
-				
-		 }
-			
-			else if(intersected[i].object.name === 'tb_audio') {
-					//window.open("http://www.servelots.com");
-					//controls.enabled = false;
-					document.removeEventListener( 'mousedown', onDocumentMouseDown);
-	controls.enabled = false;
-	controls.Enabled = false;
-	document.removeEventListener( 'keydown', onKeyDown);
-	document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock ||document.webkitExitPointerLock;
-	document.exitPointerLock();
-	instructions.style.display = 'blocked';
-	$("#show3").click();
-	colorize ++; 
-	console.log("colorize =" + colorize);
-	
-					
-			}
-			
-			else if(intersected[i].object.name === 'antPoster') {
-					//window.open("http://www.servelots.com");
-					//controls.enabled = false;
-					console.log(intersected[i].point);
-				
-		 }
+									if (intersected[i].object.name === 'Goa'+j) {
+										console.log('Goa'+j);
+									}
+								}
+								for(j=0; j<MaharashtraLength; j++)
+								{
+									if (intersected[i].object.name === 'Maharashtra'+j) {
+										console.log('Maharashtra'+j);
+									}
+								}
 
 
-	  }}}
 
+			}}}
 			
-			function setOrbitControls() {
-				
-				controls = new THREE.OrbitControls( camera, renderer.domElement );
-				
-				
-				};
-				
-			function setFirstPersonControls() {
-			
+		function animate() {
+
+			requestAnimationFrame( animate );
+			render();
+			controls.update();
+		
+			for(var i=0; i<GoaLength; i++)
+			{	
+				sweetGoa[i].lookAt(camera.position);
+				GoaTexture[i].needsUpdate = true;
 			};
 			
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-				render();
-					
-				
-				if ( controlsEnabled ) {
-					
-					//renderer.setViewport( 1, 1,   0.5 * window.innerWidth - 2, window.innerHeight - 2 );
-					//renderer.render( scene, camera2 );
-					//camera2.position.set(murra.x, murra.y, murra.z);
-					//camera2.needsUpdate = true;
-					//cube.position.set(murra.x, murra.y+800, murra.z);
-					//cube.needsUpdate = true;
-					//camera2.lookAt(murra);
-					
-					raycaster.ray.origin.copy( controls.getObject().position );
-					raycaster.ray.origin.y -= 160;
-					for(var i=0; i<filteredsweet.length; i++)
-		{
-					sweet[i].lookAt(controls.getObject().position);
-					texture12[i].needsUpdate = true;
-		};
-		audio_icon.lookAt(controls.getObject().position);
-
-					var intersections = raycaster.intersectObject( cube );
-
-					var isOnObject = intersections.length > 0;
-					
-
-					var time = performance.now();
-					PR =  controls.getPRotationValues();
-					YR =  controls.getYRotationValues();
-					//console.log(PR, YR);
-					//console.log(camera.rotation);
-					var delta = ( time - prevTime ) / 1000;
-
-					velocity.x -= velocity.x * 5.0 * delta;
-					velocity.z -= velocity.z * 5.0 * delta;
-
-					velocity.y -= velocity.y * 5.0 * delta; // 100.0 = mass
-
-					if ( moveForward ) velocity.z -= 1800.0 * delta;
-					if ( moveBackward ) velocity.z += 1800.0 * delta;
-					if ( moveUp ) velocity.y += 1800.0 * delta;
-					if ( moveDown ) velocity.y -= 1800.0 * delta;
-					//console.log(murra);
-
-					if ( moveLeft ) velocity.x -= 1800.0 * delta;
-					if ( moveRight ) velocity.x += 1800.0 * delta;
-
-					if ( isOnObject === true ) {
-						console.log("on");
-						//velocity.y = Math.max( 0, velocity.y );
-							//cube.material.color = Math.random()* 0xffffff;
-						//canJump = true;
-					}
-					
-					
-					controls.getObject().translateX( velocity.x * delta );
-					controls.getObject().translateY( velocity.y * delta );
-					controls.getObject().translateZ( velocity.z * delta );
-				
-
-					/*if ( controls.getObject().position.y < 160 ) {
-
-						velocity.y = 0;
-						controls.getObject().position.y = 160;
-
-						canJump = true;
-
-					}*/
-
-					prevTime = time;
-
-				}
-				
-				
-			
+			for(var i=0; i<MaharashtraLength; i++)
+			{
+				sweetMaharashtra[i].lookAt(camera.position);
+				MaharashtraTexture[i].needsUpdate = true;
+			};
 			}
 			
-			function render() {
-				
-				renderer.setClearColor( 0x333377 );
-				var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-	camera.aspect =  SCREEN_WIDTH / SCREEN_HEIGHT;
-	//camera2.aspect = (0.6 * SCREEN_WIDTH + 1) / (0.7* SCREEN_HEIGHT + 1);
-	camera.updateProjectionMatrix();
-	//camera2.updateProjectionMatrix();
+		function render() {
+		
+			renderer.setClearColor( 0x333377 );
+			renderer.render( scene, camera );
 	
-	// setViewport parameters:
-	//  lower_left_x, lower_left_y, viewport_width, viewport_height
-
-	//renderer.setViewport( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
-	//renderer.clear();
-	//renderer.setViewport( 0.6 * SCREEN_WIDTH + 1, 0.7* SCREEN_HEIGHT + 1,   0.5 * SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 4 );
-	//renderer.render( scene, camera2 );
-	// left side
-	renderer.setViewport( 1, 1,   SCREEN_WIDTH,  SCREEN_HEIGHT  );
-	renderer.render( scene, camera );
-	
-	// right side
-	
-	
-				//renderer.render( scene, camera );
-
 			}
 
 		</script>
