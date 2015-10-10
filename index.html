@@ -6,6 +6,8 @@
 	<head>
 		<meta charset="utf-8">
 		<title>DEVARAYANADURGA</title>
+		<link rel="stylesheet" href="css/bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="css/lightbox.css">
 		<link rel="stylesheet" href="js/avgrund_modal/avgrund.css">
 		<style>
 			html, body {
@@ -66,6 +68,14 @@
 				
 				
 			}
+            #swt-overlay {
+                z-index: 100;
+                position:absolute;
+                background-color: transparent;
+                width:50vw;
+                height:100vh;
+                overflow-y: auto;
+            }
 
 		</style>
 	</head>
@@ -79,9 +89,11 @@
 		<script src="js/fonts/helvetiker_regular.typeface.js"></script>
 		<script src="js/fonts/gentilis_regular.typeface.js"></script>
 		<script src="js/fonts/helvetiker_bold.typeface.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="js/jquery-1.11.3.min.js"></script>
+		<script src="css/bootstrap/js/bootstrap.js"></script>
 		<script src="js/underscore-min.js"></script>
 		<script src="js/backbone-min.js"></script>
+        <script src="js/lightbox.js"></script>
 		<script src="js/avgrund_modal/jquery.avgrund.js"></script>
 <div class="buttons">
 			
@@ -89,6 +101,11 @@
 			</div>
 <div id ="show2" > </div>
 <div id ="show3" > </div>
+<div class="container-fluid" id ="swt-overlay">
+        <button type="button" class="btn btn-default close-swt">Right</button>
+        <div id="swt-container">
+        </div>
+</div>
 		<div id="blocker">
 
 			<div id="instructions">
@@ -104,8 +121,25 @@
 			
 		</div>
 		
-		
-		
+        <!-- Templates for web components -->
+        <script type="text/template" id="swts-template">
+<div class="swtr-web ">
+<div class="media">
+<div class="media-body">
+<div class="media-left">
+<a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
+data-title="<%=how.comment%> <%=how.tags%>">
+<img class="media-object img-responsive" src="<%=where%>"  />
+</a>
+</div>
+<h4 class="media-heading"> <%=how.title%></h4>
+<h5> <%=how.comment%></h5>
+<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+</div>
+</div>
+</div>
+        </script>
+
 		<script>
 			
 
@@ -162,7 +196,7 @@
 			controls.getObject().rotation.set(0,-8.404, 0);
 			
 			});
-// Swts from swt store
+// swts from swt store
 var swt = Backbone.Model.extend({
     defaults: { 'who' :'',
         'what' : '',
@@ -174,22 +208,56 @@ var swt = Backbone.Model.extend({
 var swts = Backbone.Collection.extend({
     model: swt,
     filterByTag: function(tag) {
-        return this.filter(function(model){
+        var swts = this.filter(function(model){
             if(_.contains(model.get('how').tags, tag)){
                 return model;
             }
-        });    
+        });  
+        return swts = _.uniq(swts, function(swt){
+            return swt.get('where');
+        });
     }      
 });
-        swts = new swts();
-        swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
-            success: function(swts, response){
-                init();
-                animate();
-            }
-        });
+swts = new swts();
+swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
+    success: function(swts, response){
+        init();
+        animate();
+    }
+});
+//swts view to handle click handlers
+var swtsView = Backbone.View.extend({
+    el: "#swt-overlay",
+    events:{
+        ".close-swt click": "closeSwtOverlay"
+    },
+    initialize: function(options){
+        this.$swtContainer = $("#swt-container");
+        this.render();
+        this.listenTo(this.collection, "set", this.render);
+        console.log(swts, "uniq swts");
+    },
+    template: _.template($('#swts-template').html()),
+    render: function() {
+        this.$swtContainer.html('');
+        //this.targetId = this.collection.get(options.id);
+        _.each(this.collection, function(model) {
+            this.$swtContainer.append(this.template(model.toJSON()));
+        }, this);
 
-// Supposed backbone views to render canvas - status: Incomplete
+    },
+    closeSwtOverlay: function(event) {
+        console.log(event);
+        if(!(this.$el.is(":hidden"))){
+            this.$el.hide();
+        }
+        else {
+            this.$el.show();
+        }
+    }
+});
+
+    // Supposed backbone views to render canvas - status: Incomplete
 /*var boxView = Backbone.View.extend({
     tagName: 'canvas',
     initialize: function(options) {    
@@ -227,7 +295,6 @@ var annoView = Backbone.View.extend({
     }
 });
 */			
-	
 				
 			var camera, scene, renderer;
 			var controls, controls2;
@@ -527,13 +594,13 @@ var annoView = Backbone.View.extend({
 		}
 		}*/
         filteredsweet = swts.filterByTag("AntHillHacks");
+        swtsWebView = new swtsView({collection: filteredsweet});
 
 		//create all sweets for user pradyumna. placed randomly on map 
 		var temps = [];
 		for(var i=0; i<filteredsweet.length; i++)
 		{
           var swt = filteredsweet[i].toJSON();
-          console.log(swt);
 		who[i] = swt.who;
 		if (!("title" in swt.how)) {
 			title[i] = 'NO TITLE';
@@ -561,9 +628,6 @@ var annoView = Backbone.View.extend({
 				
 			tags[i]+= swt.how.tags[l]+' '; 
 			}
-            console.log('who='+who[i], 'title='+title[i],
-            'comment='+comment[i], 'tags='+tags[i])
-			//tags[i] = temps[i];
 		}
 		
 			
@@ -600,7 +664,6 @@ var annoView = Backbone.View.extend({
                scene.add(sweet[i]);
 	       sweet[i].position.set(Math.random() * (6500 - 6100) + 6100, - 700, Math.random() * (1000 - 700) + 700);
 	       sweet[i].name = 'sweet'+i;
-           console.log(sweet[i]);
 
 	       
 		}
