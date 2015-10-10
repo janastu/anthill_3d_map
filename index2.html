@@ -58,10 +58,27 @@
 		<script src="js/lightbox.js"></script>
 
 		<div class="buttons">
-			<p>Fast Navigation:<a href="#" id="Anterras">1.Anterras</a> <a href="#" id="YatriNivas">2.YatriNivas</a> <a href="#" id="Tent1">3.Tent1</a> <a href="#" id="Tent2">4.Tent2</a> <a href="#" id="Yoga">5.Yoga Narasimha Swamy Temple</a> <a href="#" id="Bhoga">6.Bhoga Narasimhaswamy Temple</a> <a href="#" id="JeebeeAmma">7.JeebeeAmma Temple</a> <a href="#" id="Kalyani">8.Kalyani</a> <a href="#" id="TB">9.Traveller's Bungalow</a> <a href="#" id="Durgadahalli">10.Durgadahalli</a>
+            <span class="label label-default">Fast
+                Navigation</span><button type="button" class="btn
+                btn-default" href="#" id="Anterras">1.Anterras</button> <button type="button" class="btn
+                btn-default"  href="#"
+                id="YatriNivas">2.YatriNivas</button> <button type="button" class="btn
+                btn-default"  href="#" id="Tent1">3.Tent1</button> <button type="button" class="btn
+                btn-default"  href="#" id="Tent2">4.Tent2</button> <button type="button" class="btn
+                btn-default"  href="#" id="Yoga">5.Yoga Narasimha Swamy
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="Bhoga">6.Bhoga Narasimhaswamy
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="JeebeeAmma">7.JeebeeAmma
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="Kalyani">8.Kalyani</button> <button type="button" class="btn
+                btn-default"  href="#" id="TB">9.Traveller's
+                Bungalow</button> <button type="button" class="btn
+                btn-default"  href="#"
+                id="Durgadahalli">10.Durgadahalli</button>
 		</div>
 		
-		<div class="container-fluid active" id ="swt-overlay">
+		<div class="container-fluid" id ="swt-overlay">
         <div id="swt-container">
         </div>
         <button type="button" class="btn btn-default close-swt">X</button>
@@ -165,6 +182,7 @@ var swtsView = Backbone.View.extend({
         _.each(this.collection, function(model) {
             this.$swtContainer.append(this.template(model.toJSON()));
         }, this);
+        this.$el.addClass("active");
 
     },
     closeSwtOverlay: function(event) {
