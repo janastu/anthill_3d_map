@@ -68,13 +68,21 @@
 				
 				
 			}
+            #swt-container{
+                margin-top: -60vh;
+                height: 50vh;
+                position: fixed;
+                overflow-y: auto;
+                overflow-x:hidden;
+                z-index: 100;
+                transition: all .4s ease 0s;
+                background: #fff;
+            }
             #swt-overlay {
                 z-index: 100;
-                position:absolute;
-                background-color: transparent;
-                width:50vw;
-                height:100vh;
-                overflow-y: auto;
+            }
+            #swt-overlay.active #swt-container {
+                top: 70vh;
             }
 
 		</style>
@@ -101,10 +109,10 @@
 			</div>
 <div id ="show2" > </div>
 <div id ="show3" > </div>
-<div class="container-fluid" id ="swt-overlay">
-        <button type="button" class="btn btn-default close-swt">Right</button>
+<div class="container-fluid active" id ="swt-overlay">
         <div id="swt-container">
         </div>
+        <button type="button" class="btn btn-default close-swt">X</button>
 </div>
 		<div id="blocker">
 
@@ -115,17 +123,18 @@
 			</div>
 
 		</div>
-		
-		<div id="top_view">
-			<img src="images/x.png"></img>
-			
-		</div>
-		
+
+        <div id="top_view">
+            <img src="images/x.png"></img>
+
+        </div>
+
         <!-- Templates for web components -->
         <script type="text/template" id="swts-template">
-<div class="swtr-web ">
+<div class="swtr-web col-md-4 col-lg-4">
 <div class="panel panel-default">
 <div class="panel-body">
+<% if(what == "img-anno") {%>
 <div class="media">
 <a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
 data-title="<%=how.comment%> <%=how.tags%>">
@@ -137,6 +146,18 @@ data-title="<%=how.comment%> <%=how.tags%>">
 <h5> <%=how.comment%></h5>
 <p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
 </div>
+<%}%>
+<%if ( what == "audio-tagger") {%>
+ <audio controls="controls" preload="none"  >
+                   Your browser does not support the <code>audio</code>
+                   element.
+      <source src="<%=where%>">
+                                                                                                                                 >
+                                                                                                                                                 </audio>
+<div class="panel-footer">
+<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+</div>
+<%}%>
 </div>
 </div>
 </div>
@@ -207,7 +228,7 @@ var swt = Backbone.Model.extend({
     }
 });
 
-var swts = Backbone.Collection.extend({
+var swtsCollection = Backbone.Collection.extend({
     model: swt,
     filterByTag: function(tag) {
         var swts = this.filter(function(model){
@@ -220,13 +241,22 @@ var swts = Backbone.Collection.extend({
         });
     }      
 });
-swts = new swts();
+var txtAnno = new swtsCollection();
+txtAnno.fetch({url:
+    'http://thestore.swtr.in/api/sweets/q?what=txt-anno'});
+var audioAnno = new swtsCollection();
+audioAnno.fetch({url:
+    'http://thestore.swtr.in/api/sweets/q?what=audio-tagger'});
+swts = new swtsCollection();
 swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
     success: function(swts, response){
+        swts.add(txtAnno.models);
+        swts.add(audioAnno.models);
         init();
         animate();
     }
 });
+console.log(swts);
 //swts view to handle click handlers
 var swtsView = Backbone.View.extend({
     el: "#swt-overlay",
@@ -235,6 +265,11 @@ var swtsView = Backbone.View.extend({
     },
     initialize: function(options){
         this.$swtContainer = $("#swt-container");
+        $(".close-swt").click(function(e) {
+            e.preventDefault();
+            $("#swt-overlay").toggleClass("active");
+
+        });
         this.render();
         this.listenTo(this.collection, "set", this.render);
         console.log(swts, "uniq swts");
