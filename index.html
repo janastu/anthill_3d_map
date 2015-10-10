@@ -124,17 +124,19 @@
         <!-- Templates for web components -->
         <script type="text/template" id="swts-template">
 <div class="swtr-web ">
+<div class="panel panel-default">
+<div class="panel-body">
 <div class="media">
-<div class="media-body">
-<div class="media-left">
 <a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
 data-title="<%=how.comment%> <%=how.tags%>">
 <img class="media-object img-responsive" src="<%=where%>"  />
 </a>
 </div>
-<h4 class="media-heading"> <%=how.title%></h4>
+<div class="panel-footer">
+<h4 class="panel-heading"> <%=how.title%></h4>
 <h5> <%=how.comment%></h5>
 <p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+</div>
 </div>
 </div>
 </div>
