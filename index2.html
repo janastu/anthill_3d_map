@@ -168,7 +168,7 @@ var swtsView = Backbone.View.extend({
         this.$swtContainer = $("#swt-container");
         $(".close-swt").click(function(e) {
             e.preventDefault();
-            $("#swt-overlay").toggleClass("active");
+            this.$el.toggleClass("active");
 
         });
         this.render();
@@ -182,7 +182,7 @@ var swtsView = Backbone.View.extend({
         _.each(this.collection, function(model) {
             this.$swtContainer.append(this.template(model.toJSON()));
         }, this);
-        this.$el.addClass("active");
+        this.$el.toggleClass("active");
 
     },
     closeSwtOverlay: function(event) {
@@ -365,7 +365,7 @@ var swtsView = Backbone.View.extend({
                 
                
                //json
-		var loader = new THREE.JSONLoader();
+		/*var loader = new THREE.JSONLoader();
 		tex2 = new THREE.ImageUtils.loadTexture('objects/tb_drone2/meshAvImgCol_color.png');
 		loader.load( "objects/tb_drone2/itbdron3.1.js", function( geometry, material ) {
 		geometry.center();
@@ -405,7 +405,7 @@ var swtsView = Backbone.View.extend({
 		domEvents.addEventListener(terrain_map, 'click', function(event){
 		console.log("eh?");					
 		}, false);
-		});
+		});*/
 		
 		
 		//skybox

@@ -7,6 +7,7 @@
 		<title>AntHillHacks</title>
 			<link rel="stylesheet" href="css/bootstrap/css/bootstrap.css">
 		<link rel="stylesheet" href="css/lightbox.css">
+        <link type="text/css" rel="stylesheet" href="css/annotorious.css" />
 		<style>
 			html, body {
 				width: 100%;
@@ -31,9 +32,19 @@
             }
             #swt-overlay {
                 z-index: 100;
+                    display:none;
             }
             #swt-overlay.active #swt-container {
-                top: 70vh;
+                top: 75vh;
+                    display:block;
+            }
+            .img-thumbnail {
+                width:300px;
+                    height:200px;
+            }
+            .panel-footer {
+                height:200px;
+                    overflow:hidden;
             }
 
 			
@@ -59,6 +70,9 @@
 		<script src ="js/tween.min.js"></script>
 		<script src="css/bootstrap/js/bootstrap.js"></script>
 		<script src="js/lightbox.js"></script>
+        <script type="text/javascript" src="js/annotorious.min.js"></script>
+        <script type="text/javascript" src="js/annotorious.debug.js"></script>
+        <script type="text/javascript" src="js/custom-fields-plugin.js"></script>
 
 		<div class="buttons">
             <span class="label label-default">
@@ -85,26 +99,37 @@
 		</div>
 		
 		<div class="container-fluid" id ="swt-overlay">
-        <div id="swt-container">
+        <div class="row"  id="swt-container">
         </div>
-        <a type="button" class="btn btn-default" id="close-swt">X</a>
+        <a type="button" class="btn btn-default pull-right" id="close-swt">
+            <span class="glyphicon glyphicon-remove">
+            </span>
+        </a>
 </div>
 <!-- Templates for web components -->
         <script type="text/template" id="swts-template">
-<div class="swtr-web col-md-4 col-lg-4">
+<div class="swtr-web col-md-4 col-lg-3 ">
 <div class="panel panel-default">
 <div class="panel-body">
 <% if(what == "img-anno") {%>
 <div class="media">
 <a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
 data-title="<%=how.comment%> <%=how.tags%>">
-<img class="media-object img-responsive" src="<%=where%>"  />
+<img class="media-object img-thumbnail" src="<%=where%>"  />
 </a>
 </div>
 <div class="panel-footer">
-<h4 class="panel-heading"> <%=how.title%></h4>
+<h4 class="panel-heading"> <%=how.title%></h3>
 <h5> <%=how.comment%></h5>
-<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+<p>-<%=who%> tagged <%=how.tags%> on 
+<%var d = new Date(created), 
+locale = "en-us",
+fragments = [d.toLocaleString(locale, {
+month: "long" }),
+d.getDate(),
+d.getFullYear()]; 
+print(fragments[0]+' '+fragments[1]+','+' '+fragments[2]);%>
+</p>
 </div>
 <%}%>
 <%if ( what == "audio-tagger") {%>
@@ -146,7 +171,10 @@ var swtsCollection = Backbone.Collection.extend({
     model: swt,
     filterByTag: function(tag) {
         var swts = this.filter(function(model){
-            if(_.contains(model.get('how').tags, tag)){
+            var tagLowerCase = tag.toLowerCase();
+            var swtTags = model.get('how').tags;
+            console.log(tagLowerCase, swtTags);
+            if(_.contains(model.get('how').tags, tagLowerCase)){
                 return model;
             }
         });  
@@ -174,19 +202,16 @@ console.log(swts);
 //swts view to handle click handlers
 var swtsView = Backbone.View.extend({
     el: "#swt-overlay",
-    /*events:{
-        "click #close-swt": "closeSwtOverlay"
-    },*/
+    events:{
+        "click #close-swt": "toggle"
+    },
+    setCustomField: false,
     initialize: function(options){
-        this.$swtContainer = $("#swt-container");
-	_.bindAll.apply(_, [this].concat(_.functions(this)));
-	this.bind('closeSwtOverlay', this.closeSwtOverlay)
-	//this.bindAll('click', this.closeSwtOverlay, this);
-	//$(".close-swt").on("click", this.closeSwtOverlay, this)
+        _.bindAll.apply(_, [this].concat(_.functions(this)));
+        this.bind('toggle', 'click', this.toggle)
+            this.$swtContainer = $("#swt-container");
         
         this.render();
-        this.listenTo(this.collection, "set", this.render);
-        console.log(swts, "uniq swts");
     },
     template: _.template($('#swts-template').html()),
     render: function() {
@@ -195,25 +220,50 @@ var swtsView = Backbone.View.extend({
         _.each(this.collection, function(model) {
             this.$swtContainer.append(this.template(model.toJSON()));
         }, this);
-        this.$el.addClass("active");
+        this.toggle();
+        this.initAnno();
 
     },
-   
-    closeSwtOverlay: function() {
-	
-        console.log("event");
-	this.$el.toggleClass("active");
-	/*if (!(this.$el.is(":hidden"))){
-			  this.$el.removeClass("active");
+    initAnno: function() {
+        if(!this.setCustomField) {
+            anno.addPlugin("CustomFields", {});
+            this.setCustomField = true;
+        }
+        _.each($("img"), function(item) {
+            anno.makeAnnotatable(item);
+        });
+        _.each(this.collection, function(swt) {
+            var anno_obj = swt.toJSON();
+            var newAnno = {};
+            newAnno.editable = false,
+            newAnno.id = anno_obj.id,
+            newAnno.shapes = anno_obj.how.shapes,
+            newAnno.src = anno_obj.how.src,
+            newAnno.context = anno_obj.how.context,
+            newAnno.text = anno_obj.how.comment;
+            console.log(anno_obj, newAnno);
+            anno.addAnnotation(newAnno);
+            anno.hideSelectionWidget();
+            this.$(".annotorious-item-unfocus").css("opacity", '0.6');
+        },
+        this);
+        console.log("annotatable");
+    },
+    toggle: function() {
+        console.log("toggle");
+        if(this.$el.is(":hidden")){
+            this.$el.show();
+            this.$el.addClass("active");
+        }
+        else {
+            this.$el.hide();
+            this.cleanUp();
+        }
+    },
+    cleanUp: function() {
+        this.undelegateEvents();
+        this.remove();
     }
-    else {
-	this.$el.addClass("active");
-    }*/
-		//code
-	}
-	
-      
-    
 });	
 			
 		
@@ -813,7 +863,6 @@ axisHelper.position.set(camera.position.x, camera.position.y, camera.position.z+
 			AntHillHacksTags = ["Anterras","Tent1","Tent2","TB","YatriNivas","Yoga","Bhoga","JeebeeAmma","Kalyani","Durgadahalli","Halekote"];
 			for(var i=0;i<AntHillHacksTags.length;i++)
 			{
-				console.log(window[AntHillHacksTags[i]+'Length']);
 				for(var k=0; k<window[AntHillHacksTags[i]+'Length']; k++)
 			{
 				console.log("anthill");
