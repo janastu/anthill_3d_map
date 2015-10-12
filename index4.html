@@ -1,0 +1,951 @@
+<!-- status
+added all locations.
+todo: merge with salus code that accepts tags in lower/upper case letters and returns to filteredsweets
+todo: add panos
+todo: animate location transtions
+todo: split comments, title into lines
+-->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>AntHillHacks</title>
+			<link rel="stylesheet" href="css/bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="css/lightbox.css">
+		<style>
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+
+			body {
+				background-color: #ffffff;
+				margin: 0;
+				overflow: hidden;
+				font-family: arial;
+			}
+			  #swt-container{
+                margin-top: -60vh;
+                height: 50vh;
+                position: fixed;
+                overflow-y: auto;
+                overflow-x:hidden;
+                z-index: 100;
+                transition: all .4s ease 0s;
+                background: #fff;
+            }
+            #swt-overlay {
+                z-index: 100;
+            }
+            #swt-overlay.active #swt-container {
+                top: 70vh;
+            }
+
+			
+
+		</style>
+	</head>
+	<body>
+		
+		
+		<script src="js/three.min.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/Projector.js"></script>
+		<script src="js/fonts/helvetiker_regular.typeface.js"></script>
+		<script src="js/fonts/helvetiker_bold.typeface.js"></script>
+		<script src="js/fonts/gentilis_regular.typeface.js"></script>
+		<script src="js/fonts/optimer_bold.typeface.js"></script>
+		<script src="js/fonts/optimer_regular.typeface.js"></script>
+		<script src="js/jquery-1.11.3.min.js"></script>
+		<script src="js/underscore-min.js"></script>
+		<script src="js/backbone-min.js"></script>
+		<script src ="js/threex.domevents.js"></script>
+		<script src ="js/threex.linkify.js"></script>
+		<script src ="js/tween.min.js"></script>
+		<script src="css/bootstrap/js/bootstrap.js"></script>
+		<script src="js/lightbox.js"></script>
+
+		<div class="buttons">
+            <span class="label label-default">
+                Navigation</span><button type="button" class="btn
+                btn-default" href="#" id="Anterras">1.Anterras</button> <button type="button" class="btn
+                btn-default"  href="#"
+                id="YatriNivas">2.YatriNivas</button> <button type="button" class="btn
+                btn-default"  href="#" id="Tent1">3.Tent1</button> <button type="button" class="btn
+                btn-default"  href="#" id="Tent2">4.Tent2</button> <button type="button" class="btn
+                btn-default"  href="#" id="Yoga">5.Yoga Narasimha Swamy
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="Bhoga">6.Bhoga Narasimhaswamy
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="JeebeeAmma">7.JeebeeAmma
+                Temple</button> <button type="button" class="btn
+                btn-default"  href="#" id="Kalyani">8.Kalyani</button> <button type="button" class="btn
+                btn-default"  href="#" id="TB">9.Traveller's
+                Bungalow</button> <button type="button" class="btn
+                btn-default"  href="#"
+                id="Durgadahalli">10.Durgadahalli</button><button type="button" class="btn
+                btn-default"  href="#"
+                id="Halekote">11.Halekote</button>
+		
+		</div>
+		
+		<div class="container-fluid" id ="swt-overlay">
+        <div id="swt-container">
+        </div>
+        <a type="button" class="btn btn-default" id="close-swt">X</a>
+</div>
+<!-- Templates for web components -->
+        <script type="text/template" id="swts-template">
+<div class="swtr-web col-md-4 col-lg-4">
+<div class="panel panel-default">
+<div class="panel-body">
+<% if(what == "img-anno") {%>
+<div class="media">
+<a class="lightbox-item" href="<%=where%>" data-lightbox="<%=what%>"
+data-title="<%=how.comment%> <%=how.tags%>">
+<img class="media-object img-responsive" src="<%=where%>"  />
+</a>
+</div>
+<div class="panel-footer">
+<h4 class="panel-heading"> <%=how.title%></h4>
+<h5> <%=how.comment%></h5>
+<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+</div>
+<%}%>
+<%if ( what == "audio-tagger") {%>
+ <audio controls="controls" preload="none"  >
+                   Your browser does not support the <code>audio</code>
+                   element.
+      <source src="<%=where%>">
+                                                                                                                                 >
+                                                                                                                                                 </audio>
+<div class="panel-footer">
+<p>-<%=who%> on <%=created%> tagged <%=how.tags%> </p>
+</div>
+<%}%>
+</div>
+</div>
+</div>
+	</script>
+		
+		<script>
+			
+			//webView Top panel slider
+			 $("#close-swt").click(function(e) {
+            e.preventDefault();
+            $("#swt-overlay").toggleClass("active");
+
+        });
+			
+		// Swts from swt store
+		var swt = Backbone.Model.extend({
+		defaults: { 'who' :'',
+		'what' : '',
+		'where' : '',
+		'how' : {}
+		}	
+		});
+
+
+var swtsCollection = Backbone.Collection.extend({
+    model: swt,
+    filterByTag: function(tag) {
+        var swts = this.filter(function(model){
+            if(_.contains(model.get('how').tags, tag)){
+                return model;
+            }
+        });  
+        return swts = _.uniq(swts, function(swt){
+            return swt.get('where');
+        });
+    }      
+});
+var txtAnno = new swtsCollection();
+txtAnno.fetch({url:
+    'http://thestore.swtr.in/api/sweets/q?what=txt-anno'});
+var audioAnno = new swtsCollection();
+audioAnno.fetch({url:
+    'http://thestore.swtr.in/api/sweets/q?what=audio-tagger'});
+swts = new swtsCollection();
+swts.fetch({url:'http://thestore.swtr.in/api/sweets/q?what=img-anno',
+    success: function(swts, response){
+        swts.add(txtAnno.models);
+        swts.add(audioAnno.models);
+        init();
+        animate();
+    }
+});
+console.log(swts);
+//swts view to handle click handlers
+var swtsView = Backbone.View.extend({
+    el: "#swt-overlay",
+    /*events:{
+        "click #close-swt": "closeSwtOverlay"
+    },*/
+    initialize: function(options){
+        this.$swtContainer = $("#swt-container");
+	_.bindAll.apply(_, [this].concat(_.functions(this)));
+	this.bind('closeSwtOverlay', this.closeSwtOverlay)
+	//this.bindAll('click', this.closeSwtOverlay, this);
+	//$(".close-swt").on("click", this.closeSwtOverlay, this)
+        
+        this.render();
+        this.listenTo(this.collection, "set", this.render);
+        console.log(swts, "uniq swts");
+    },
+    template: _.template($('#swts-template').html()),
+    render: function() {
+        this.$swtContainer.html('');
+        //this.targetId = this.collection.get(options.id);
+        _.each(this.collection, function(model) {
+            this.$swtContainer.append(this.template(model.toJSON()));
+        }, this);
+        this.$el.addClass("active");
+
+    },
+   
+    closeSwtOverlay: function() {
+	
+        console.log("event");
+	this.$el.toggleClass("active");
+	/*if (!(this.$el.is(":hidden"))){
+			  this.$el.removeClass("active");
+    }
+    else {
+	this.$el.addClass("active");
+    }*/
+		//code
+	}
+	
+      
+    
+});	
+			
+		
+		$('#Anterras').click(function(){
+			
+			 /*var aTween = new TWEEN.Tween( camera.position ).to( {
+						x: 6849,
+						y:  -800.5,
+						z:  250.5, }, 50000)
+		.easing( TWEEN.Easing.Linear.None).onUpdate(function () {
+		//camera.lookAt(camera.target);
+		}).onComplete(function () {
+		controls.center.set(6848, -800.5,  250);
+		camera.updateProjectionMatrix();}).start();
+			//camera.position.set(6848, -800,  250);
+			//controls.center.set(6848, -800.5,  250);
+			//render();*/
+			 //setupTween (camera.position.clone(), new THREE.Vector3 (1849, -800.5,250.5), 75000);
+			
+			camera.position.set(6800, -800.5,  250);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			
+			});
+		$('#YatriNivas').click(function(){
+			
+			camera.position.set(6542, -800, 700);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Tent1').click(function(){
+			
+			camera.position.set(6550, -801, 669);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Tent2').click(function(){
+			
+			camera.position.set(6520, -808, 125.5);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Yoga').click(function(){
+			camera.position.set(303, 1531, 6534);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			
+			
+			});
+		$('#Bhoga').click(function(){
+			
+			camera.position.set(5241, -496, 1936);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#JeebeeAmma').click(function(){
+			
+			camera.position.set(4089, -771, 370.5);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Kalyani').click(function(){
+			//3375.4281241, -1160, -331.91
+			camera.position.set(6939/2, -1091, -454);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#TB').click(function(){
+			
+			camera.position.set(5867.0673768754405, -260.8938665332068, 3317.92626);
+			 controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Durgadahalli').click(function(){
+			camera.position.set(9620,-2877, 14633);
+			controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		$('#Halekote').click(function(){
+			camera.position.set(7853.893910354822,  -2789.692744522051, 9306.754700640537);
+			controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+			
+			});
+		
+		
+		
+	
+			//variables	
+			var camera, scene, renderer;
+			var controls, controls2;
+			var objects = [];
+			var raycaster, raycaster2, mouse;
+			var murra, cube, cube2, camera2;
+			var raycaster2 = new THREE.Raycaster();
+			var direction = new THREE.Vector3( 0, 0, 0.5 );
+			var rotation = new THREE.Euler( 0, 0, 0, "YXZ" );
+			var v3 = new THREE.Vector3;
+			var info_tex, info_geo, info_mat, info_icon;
+			var audio_tex, audio_geo, audio_mat, audio_icon, terrain_map;
+			var colorize = 0, ji = 0;
+			var mClick = 0;
+			var sweet = [], sweet_geo = [], sweet_mat = [], canvas = [], context =[], img2 = [], texture12 = [], who = [], what = [], where = [], id = [], created = [], title = [], tags = [],temp = [], comment = [];
+			var intersects2;
+			var intersections2;
+			var mesh, mesh2;
+			var filteredsweet = [];
+			var group1, group2;
+			var domEvents;
+			var sweetFlag = false;
+			//var axisHelper;
+			var AntHillHacksTags = ["Anterras","Tent1","Tent2","TB","YatriNivas","Yoga","Bhoga","JeebeeAmma","Kalyani","Durgadahalli","Halekote"];
+			
+			//tween for location.
+			//not working
+			/*
+			function setupTween (position, target, duration)
+{
+    TWEEN.removeAll();    // remove previous tweens if needed
+
+    new TWEEN.Tween (position)
+        .to (target, duration)
+        .easing (TWEEN.Easing.Bounce.InOut)
+        .onUpdate (
+            function() {
+                // copy incoming position into capera position
+                camera.position.copy (position);
+            })
+        .start();
+	camera.lookAt(terrain_map.position);
+}
+	*/
+			function init() {
+				
+				//render code
+				renderer = new THREE.WebGLRenderer({antialias: true});
+				renderer.setClearColor( 0x333377, 0.9 );
+				renderer.autoClear = false;
+				//renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500000 );
+				scene.add(camera);
+				camera.position.set(6408, 221, 576 )
+				
+				//controls
+				controls = new THREE.OrbitControls(camera, renderer.domElement);
+				controls.noPan = true;
+				controls.noZoom = false;
+				controls.center.set(camera.position.x-0.1, camera.position.y, camera.position.z);
+				
+				//lights
+				/*
+				var light1 = new THREE.PointLight( 0xeeeeff, 100, 500 );
+				light1.position.set( 200,230,-50 );
+				scene.add( light1 );
+			
+				var light2 = new THREE.PointLight( 0xeeeeff, 100, 500 );
+				light2.position.set( 20,20,-250 );
+				scene.add( light2 );
+			
+				var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+				light.position.set( 0.5, 1, 0.75 );
+				scene.add( light );
+				*/
+				
+				
+				 //dom events
+				 domEvents = new THREEx.DomEvents(camera, renderer.domElement);
+				document.addEventListener( 'keydown', onKeyDown, false );
+				//document.addEventListener( 'keyup', onKeyUp, false );
+				//document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				//document.addEventListener( 'mouseover', onDocumentMouseOver, false );
+				//document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+				window.addEventListener( 'resize', onWindowResize, false );
+				raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 1000 );
+				mouse = new THREE.Vector2();
+				
+
+		//objects
+                
+               
+               //json
+		var loader = new THREE.JSONLoader();
+		tex2 = new THREE.ImageUtils.loadTexture('objects/tb_drone2/meshAvImgCol_color.png');
+		loader.load( "objects/tb_drone2/itbdron3.1.js", function( geometry, material ) {
+		geometry.center();
+		var scale = 5;
+	        drone_mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map:tex2, side:THREE.DoubleSide})  );
+		drone_mesh.rotation.set(3.1, -3.90, 0);
+		drone_mesh.scale.set(scale,scale,scale);
+		scene.add(drone_mesh);
+		drone_mesh.position.set( 5909, -355,  3293);
+		});
+                
+		var loader3 = new THREE.JSONLoader();
+		tex4 = new THREE.ImageUtils.loadTexture('objects/idol/meshAvImgCol_color.png');
+		loader3.load( "objects/idol/idolsimple.js", function( geometry, material ) {
+		geometry.center();
+		var scale = 10;
+		idol_mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map:tex4, side:THREE.DoubleSide})  );
+		idol_mesh.rotation.set(-3.0999, 1.4999, 0);
+		idol_mesh.scale.set(scale,scale,scale);
+		scene.add(idol_mesh);
+		idol_mesh.position.set(3375.4281241, -1160, -331.91);
+		});
+		
+		var loader4 = new THREE.JSONLoader();
+		var tex5 = new THREE.ImageUtils.loadTexture('objects/ddhills_terrain_3/0_test1_0_3.jpg');
+		tex5.generateMipmaps = false;
+	        tex5.minFilter = THREE.LinearFilter;
+	        tex5.magFilter = THREE.LinearFilter;
+		loader4.load( "objects/ddhills_terrain_3/0_test1_4.js", function( geometry, material) {
+		geometry.center();
+		var scale = 100;
+		terrain_map = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({ map: tex5, side:THREE.DoubleSide})  );
+		terrain_map.scale.set(scale,scale,scale);
+		scene.add(terrain_map);
+		terrain_map.position.set(0,-1360,0);
+		//threex event handler
+		domEvents.addEventListener(terrain_map, 'click', function(event){
+		console.log("eh?");					
+		}, false);
+		});
+		
+		
+		//skybox
+		var skybox = new THREE.Mesh(new THREE.SphereGeometry(100000,75,75), new THREE.MeshBasicMaterial({map: new THREE.ImageUtils.loadTexture('images/sky1.jpg'), side:THREE.BackSide}));
+		scene.add(skybox);
+		skybox.position.set(0,-4360 , 0);
+		
+                //test cube
+		/*cube = new THREE.Mesh(new THREE.BoxGeometry(200,500,200), new THREE.MeshBasicMaterial({side:THREE.DoubleSide, color:0x00ff00}));
+		scene.add(cube);
+		cube.name = 'cube1';
+		cube.position.set(6008, -721, 576 );
+		axisHelper = new THREE.AxisHelper( 50 );
+		scene.add( axisHelper );
+		*/
+		
+		for(i=0;i<AntHillHacksTags.length; i++)
+		{
+			makeSweets('AntHillHacksTags[i]');
+		}
+		//makeSweets("Maharashtra");
+		//makeSweets("Goa");
+		//makeSweets("Halekote");
+		
+	 
+		//audio icon
+		/*
+	       audio_tex = new THREE.ImageUtils.loadTexture('images/audio.png');
+	       audio_tex.generateMipmaps = false;
+	       audio_tex.minFilter = THREE.LinearFilter;
+	       audio_tex.magFilter = THREE.LinearFilter;
+               audio_geo = new THREE.PlaneBufferGeometry(35, 35);
+               audio_mat = new THREE.MeshBasicMaterial ({map:audio_tex, transparent:true, opacity:0.9});
+               audio_icon = new THREE.Mesh(audio_geo, audio_mat);
+               scene.add(audio_icon);
+	       audio_icon.position.set(6551.9908097, -724.341328, 493.19269);
+	       audio_icon.name = 'tb_audio';
+		*/
+          
+                }
+			
+	function makeSweets(x) {
+		//generates a canvas texture with sweet data, textures onto mesh;
+		//using window[] to declare global variables. find more efficient way.
+		filteredsweet = swts.filterByTag(x);
+		 //GoaCount = 0, MaharashtraCount = 0;
+		 window[x+'Count'] = 0;
+		var temps = [];
+		var  who = [], what = [], where = [], id = [], created = [], title = [], tags = [], comment = [];
+		window[x+'ID'] = [];
+		window[x+'Canvas'] = [];
+		window[x+'Context'] = [];
+		window['sweet'+x] = [];
+		window[x+'Texture'] = [];
+		window[x+'Mat'] = [];
+		window[x+'Geo'] = [];
+		window[x+'Length'] = filteredsweet.length;
+		window[x+'Url'] = [];
+		window[x+'Linkify'] = [];
+		window[x+'WebView'] = [];
+		
+		
+		for(var i=0; i<filteredsweet.length; i++)
+		{
+		var swt = filteredsweet[i].toJSON();
+		//console.log(swt);
+		window[x+'ID'][i] = swt.id;
+		
+		who[i] = swt.who;
+		what[i] = swt.what;
+		if (!("title" in swt.how)) {
+			title[i] = '';
+		}
+		else {
+			title[i] = swt.how.title;
+		}
+		
+		if (!("comment" in swt.how)) {
+			comment[i] = '';
+		}
+		else {
+			comment[i] = swt.how.comment;
+			if (comment[i].length >= 30) {
+				var commentsubstring = comment[i].substring(0, 30)+'...';
+				comment[i] = commentsubstring;
+				
+			}
+		}
+		
+		if (!("tags" in swt.how)) {
+			tags[i] = '';
+		}
+		
+		else {
+			
+			tags[i] = '';
+			for(var l=0; l<swt.how.tags.length;l++)
+			{
+				
+			tags[i]+= '#'+swt.how.tags[l]+' '; 
+			}
+		//console.log('who='+who[i], 'title='+title[i],
+		//'comment='+comment[i], 'tags='+tags[i])
+	
+		}
+		
+			
+		// create canvas
+		window[x+'Canvas'][i] = document.createElement('canvas');
+		window[x+'Canvas'][i].width = 256;
+		window[x+'Canvas'][i].height = 128;
+		window[x+'Context'][i] = window[x+'Canvas'][i].getContext('2d');
+		var temp = new Image();
+		temp.onload = (function(i){
+			return function() {
+						
+						window[x+'Context'][i].drawImage(temp, 0, 0, 256, 128);
+						window[x+'Context'][i].font = 'Regular 10px Helvetica';
+						window[x+'Context'][i].fillStyle ="#000000";
+						window[x+'Context'][i].fillText('~'+who[i], 200, 50);
+						//window[x+'Context'][i].fillText(what[i], 130, 30);
+						window[x+'Context'][i].fillText(tags[i], 20, 110);
+						window[x+'Context'][i].font = 'Regular 7px Helvetica';
+						window[x+'Context'][i].fillText(comment[i], 80, 30);
+						window[x+'Context'][i].font = 'Bold 10px Helvetica';
+						//window[x+'Context'][i].fillText(title[i], 20, 64);
+						
+			}
+		})(i);
+		temp.src = 'images/template3.png';
+		window[x+'Texture'][i] = new THREE.Texture(window[x+'Canvas'][i]);
+		window[x+'Texture'][i].needsUpdate = true;
+		window[x+'Geo'][i] = new THREE.BoxGeometry(50, 25, 1);
+                window[x+'Mat'][i] = new THREE.MeshBasicMaterial ({map:window[x+'Texture'][i], transparent: true, opacity:1});
+		window['sweet'+x][i] =  new THREE.Mesh(window[x+'Geo'][i], window[x+'Mat'][i]);
+		scene.add(window['sweet'+x][i]);
+	        //window[x+'Url'][i] = 'http://thestore.swtr.in/sweets/'+window[x+'ID'][i]
+		window[x+'Linkify'][i] = THREEx.Linkify(domEvents, window['sweet'+x][i],  true)
+		
+		
+		switch (x){
+		
+		case "Anterras":
+				window['sweet'+x][i].position.set(6800, -800, 350+window[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+				
+		
+		case "Durgadahalli ":
+				window['sweet'+x][i].position.set(9520,-2877, 14733+window[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				
+				//domEvents.addEventListener(window['sweet'+x][i], 'click', function(event){
+				//swtsWebView = new swtsView({collection: filteredsweet, id:swt.id});				
+				//}, false);
+				break;
+			
+		case "Halekote":
+				window['sweet'+x][i].position.set(7853,  -2789, 9366[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+			
+		case "Yoga":
+				window['sweet'+x][i].position.set(303, 1531 ,6634[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "Bhoga":
+				window['sweet'+x][i].position.set(5241, -496, 2036[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "JeebeeAmma":
+				window['sweet'+x][i].position.set(4089, -771, 470.5[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+		
+		case "Kalyani":
+				window['sweet'+x][i].position.set(6939/2, -1091, -554[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "Tent1":
+				window['sweet'+x][i].position.set(6550, -801, 769[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "Tent2":
+				window['sweet'+x][i].position.set(6520, -808, 225.5[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "TB":
+				window['sweet'+x][i].position.set(5867, -260, 3417[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			
+		case "YatriNivas":
+				window['sweet'+x][i].position.set(6542, -800, 800[x+'Count']);
+				window['sweet'+x][i].name = x+i;
+				window[x+'Count']+=2;
+				domEvents.addEventListener(window['sweet'+x][i], 'dblclick', function(event){
+				window[x+'WebView'] = new swtsView({collection: swts.filterByTag(x), id:swt.id});				
+				}, false);
+				break;
+			}
+		}
+	       };
+	       
+	       function showSweet(name, x, y, z)
+	       {
+		console.log(window[name+'Length']);
+		//
+		
+			window[name+'ShowTween'] = [];
+			for(i=0; i<window[name+'Length'];i++)
+			{
+				//console.log(window['sweet'+name][i].position);
+				window[name+'ShowTween'][i] = new TWEEN.Tween(window['sweet'+name][i].position).to( {
+						x:Math.random() * (x+100 - (x-100)) + (x-100),
+						y:Math.random() * (y+100 - (y-100))+ (y-100),
+						z:Math.random() * (z+100 - (z-100)) + (z-100) }, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+		}
+		
+		sweetFlag = true;
+		/*var showMahaTween = [];
+		for(i=0; i<MaharashtraLength;i++)
+		{
+		showMahaTween[i] = new TWEEN.Tween( sweetMaharashtra[i].position ).to( {
+						x: Math.random() * (10442 - 9098) + 9098,
+						y:Math.random() * -(2977 - 2677) -2677,
+						z: Math.random() * (14887 - 14680) + 14680 }, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+		}
+		var showHalekoteTween = [];
+		for(i=0; i<HalekoteLength;i++)
+		{
+		showHalekoteTween[i] = new TWEEN.Tween( sweetHalekote[i].position ).to( {
+						x: Math.random() * (7950 - 7750) + 7750,
+						y:Math.random() * -(2850 - 2750) -2750,
+						z: Math.random() * (9400 - 9200) + 9200 }, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+		}
+		
+		*/
+	       }
+	       
+	       function hideSweet(name, x, y, z) {
+		//console.log('hiding');
+		window[name+'HideTween'] = [];
+		j=0;
+			for(i=0; i<window[name+'Length'];i++)
+			{
+				//console.log("hiding forloop");
+				
+				//console.log(window['sweet'+name][i].position);
+				window[name+'HideTween'][i] = new TWEEN.Tween(window['sweet'+name][i].position).to( {
+						x:x,
+						y:y,
+						z:z+j }, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+					j+=2;
+		}
+		j=0;
+		sweetFlag = false;
+		/*
+		var hideGoaTween = [];
+		j = 0;
+		for(i=0; i<GoaLength;i++)
+		{
+		hideGoaTween[i] = new TWEEN.Tween( sweetGoa[i].position ).to( {
+						x: 6800,
+						y:- 800,
+						z: 350+j}, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+					j+=2;
+		}
+		
+		var hideMahaTween = [];
+		k = 0;
+		for(i=0; i<MaharashtraLength;i++)
+		{
+		hideMahaTween[i] = new TWEEN.Tween( sweetMaharashtra[i].position ).to( {
+						x: 9520,
+						y:- 2877,
+						z: 14733+k}, 5000)
+					
+					.easing( TWEEN.Easing.Linear.None)
+                                        .start();
+					k+=2;
+		}
+		
+		*/
+	       }
+
+	function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+		};
+			
+	function makeRay(event) {
+				
+				raycaster2 = new THREE.Raycaster(controls.getObject().position, controls.getDirection(v3), 0, 1000);
+				return raycaster2;
+		};
+			
+	function onKeyDown( event ) {
+				var value=0.01, value2 =1;
+				switch ( event.keyCode ) {
+				//add navigation code here
+						case 38: // up
+						case 87: // w
+							moveForward = true;
+							break;
+
+						case 37: // left
+						case 65: // a
+							moveLeft = true; break;
+
+						case 40: // down
+						case 83: // s
+							moveBackward = true;
+							break;
+
+						case 39: // right
+						case 68: // d
+							moveRight = true;
+							break;
+						case 81: //q
+							moveUp = true;
+							break;
+						
+						case 69: //e
+							moveDown = true;
+							break;
+						case 32: //space
+							
+							if (sweetFlag == false) {
+								
+								showSweet('Anterras',6800,-800.5,250);
+								showSweet('Durgadahalli',9620,-2877, 14633);
+								showSweet('Halekote',7853 ,-2789 ,9306 );
+								showSweet('Yoga',303, 1531 ,6534 );
+								showSweet('Bhoga', 5241, -496, 1936);
+								showSweet('JeebeeAmma', 4089, -771, 370.5);
+								showSweet('Kalyani', 6939/2, -1091, -454);
+								showSweet('Tent1', 6550, -801, 669);
+								showSweet('Tent2',6520, -808, 125.5 );
+								showSweet('TB', 5867, -260, 3317);
+								showSweet('YatriNivas', 6542, -800, 700);
+							}
+							
+							else
+							{
+								hideSweet('Anterras',6800,-800.5,350);
+								hideSweet('Durgadahalli',9620,-2877, 14733);
+								hideSweet('Halekote',7853 ,-2789 ,9206 );
+								hideSweet('Yoga',303, 1531 ,6634 );
+								hideSweet('Bhoga', 5241, -496, 2036);
+								hideSweet('JeebeeAmma', 4089, -771, 470.5);
+								hideSweet('Kalyani', 6939/2, -1091, -554);
+								hideSweet('Tent1', 6550, -801, 769);
+								hideSweet('Tent2',6520, -808, 225.5 );
+								hideSweet('TB', 5867, -260, 3417);
+								hideSweet('YatriNivas', 6542, -800, 800);
+							
+							}
+
+						
+						}
+
+				};
+
+				
+			function onDocumentMouseDown( event ) {
+				//might not be required
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / renderer.domElement.width ) * 2 - 1;
+				mouse.y = - ( event.clientY / renderer.domElement.height ) * 2 + 1;
+				
+				
+					
+					var intersected;
+					var ray = makeRay(event);
+					if (ray.intersectObjects(scene.children).length > 0)
+					{	
+						intersected = ray.intersectObjects(scene.children);
+						//console.log(intersected);
+						for (i = 0; i < intersected.length; i++)
+						{
+							console.log(intersected[i]);
+							mClick++;
+							console.log(mClick);
+							
+								for(j=0; j<GoaLength; j++)
+								{
+									if (intersected[i].object.name === 'Goa'+j) {
+										console.log('Goa'+j);
+									}
+								}
+								for(j=0; j<MaharashtraLength; j++)
+								{
+									if (intersected[i].object.name === 'Maharashtra'+j) {
+										console.log('Maharashtra'+j);
+									}
+								}
+
+
+
+			}}}
+			
+		function animate() {
+//axisHelper.position.set(camera.position.x, camera.position.y, camera.position.z+50);
+			requestAnimationFrame( animate );
+			render();
+			controls.update();
+			TWEEN.update();
+			//lookat
+			//AntHillHacksTags = ["Anterras","Tent1","Tent2","TB","YatriNivas","Yoga","Bhoga","JeebeeAmma","Kalyani","Durgadahalli","Halekote"];
+			for(i=0;i<AntHillHacksTags.length;i++)
+			{
+				//console.log(window[AntHillHacksTags[i]+'Length']);
+				for(k=0; k<window[AntHillHacksTags[i]+'Length']; k++)
+			{
+				console.log("anthill");
+				//console.log(window[AntHillHacksTags[i]+'Length']);
+				window['sweet'+AntHillHacksTags[i]][k].lookAt(camera.position);
+				//window[AntHillHacksTags[i]+'Texture'][k].needsUpdate = true;
+			}
+			}
+			/*
+			for(var i=0; i<MaharashtraLength; i++)
+			{
+				sweetMaharashtra[i].lookAt(camera.position);
+				MaharashtraTexture[i].needsUpdate = true;
+			};
+			*/
+			}
+			
+		function render() {
+		
+			renderer.setClearColor( 0x333377 );
+			renderer.render( scene, camera );
+	
+			}
+
+		</script>
+	</body>
+</html>
